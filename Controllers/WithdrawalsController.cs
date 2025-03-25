@@ -23,8 +23,29 @@ namespace BankAPI.Controllers
             _logger = logger;
         }
 
-        // POST: api/Withdrawals
-        [HttpPost]
+      
+    /// <summary>
+    /// Creates a new withdrawal transaction
+    /// </summary>
+    /// <remarks>
+    /// Sample request:
+    ///
+    ///     POST /api/Withdrawals
+    ///     {
+    ///        "accountNumber": "1000000001",
+    ///        "amount": 100.00
+    ///     }
+    ///
+    /// </remarks>
+    /// <param name="createWithdrawalDTO">Withdrawal details</param>
+    /// <returns>The created withdrawal record</returns>
+    /// <response code="201">Returns the newly created withdrawal</response>
+    /// <response code="400">If the request is invalid or business rules are violated</response>
+    /// <response code="404">If the account doesn't exist</response>
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<WithdrawalDTO>> CreateWithdrawal(
             CreateWithdrawalDTO createWithdrawalDTO)
         {

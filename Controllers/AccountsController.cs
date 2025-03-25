@@ -19,9 +19,17 @@ namespace BankAPI.Controllers
         {
             _context = context;
         }
-
+ /// <summary>
+    /// Retrieves all accounts for a specific account holder
+    /// </summary>
+    /// <param name="name">The account holder's full name (firstname lastname)</param>
+    /// <returns>List of accounts for the specified holder</returns>
+    /// <response code="200">Returns the list of accounts</response>
+    /// <response code="404">If no accounts found for the holder</response>
         // GET: api/Accounts/Holder/{name}
        [HttpGet("Holder/{name}")]
+       [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
 public async Task<ActionResult<IEnumerable<AccountDTO>>> GetAccountsByHolder(string name)
 {
     var accounts = await _context.Accounts
@@ -52,8 +60,16 @@ public async Task<ActionResult<IEnumerable<AccountDTO>>> GetAccountsByHolder(str
     return accounts;
 }
 
-        // GET: api/Accounts/{accountNumber}
-[HttpGet("{accountNumber}")]
+    /// <summary>
+    /// Retrieves a specific bank account by account number
+    /// </summary>
+    /// <param name="accountNumber">The account number to retrieve</param>
+    /// <returns>The requested account details</returns>
+    /// <response code="200">Returns the requested account</response>
+    /// <response code="404">If the account doesn't exist</response>
+    [HttpGet("{accountNumber}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
 public async Task<ActionResult<AccountDTO>> GetAccount(string accountNumber)
 {
     var account = await _context.Accounts
