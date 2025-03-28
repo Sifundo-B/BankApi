@@ -1,0 +1,127 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>BankAPI</name>
+    </assembly>
+    <members>
+        <member name="M:BankAPI.Controllers.AccountsController.GetAccountsByHolder(System.String)">
+            <summary>
+            Retrieves all accounts for a specific account holder
+            </summary>
+            <param name="name">The account holder's full name (firstname lastname)</param>
+            <returns>List of accounts for the specified holder</returns>
+            <response code="200">Returns the list of accounts</response>
+            <response code="404">If no accounts found for the holder</response>
+        </member>
+        <member name="M:BankAPI.Controllers.AccountsController.GetAllAccounts">
+            <summary>
+            Retrieves all accounts (Admin and Banker only)
+            </summary>
+        </member>
+        <member name="M:BankAPI.Controllers.AccountsController.GetAccount(System.String)">
+            <summary>
+            Retrieves a specific bank account by account number
+            </summary>
+            <param name="accountNumber">The account number to retrieve</param>
+            <returns>The requested account details</returns>
+            <response code="200">Returns the requested account</response>
+            <response code="404">If the account doesn't exist</response>
+        </member>
+        <member name="M:BankAPI.Controllers.WithdrawalsController.GetWithdrawalHistory(System.String)">
+            <summary>
+            Gets withdrawal history for an account (Admin and Banker only)
+            </summary>
+        </member>
+        <member name="M:BankAPI.Controllers.WithdrawalsController.CreateWithdrawal(BankAPI.DTOs.CreateWithdrawalDTO)">
+             <summary>
+             Creates a new withdrawal transaction
+             </summary>
+             <remarks>
+             Sample request:
+            
+                 POST /api/Withdrawals
+                 {
+                    "accountNumber": "1000000001",
+                    "amount": 100.00
+                 }
+            
+             </remarks>
+             <param name="createWithdrawalDTO">Withdrawal details</param>
+             <returns>The created withdrawal record</returns>
+             <response code="201">Returns the newly created withdrawal</response>
+             <response code="400">If the request is invalid or business rules are violated</response>
+             <response code="404">If the account doesn't exist</response>
+        </member>
+        <member name="P:BankAPI.DTOs.AccountDTO.AccountNumber">
+            <summary>
+            The account number
+            </summary>
+            <example>1000000001</example>
+        </member>
+        <member name="P:BankAPI.DTOs.AccountDTO.Type">
+            <summary>
+            The type of account
+            </summary>
+            <example>Savings</example>
+        </member>
+        <member name="P:BankAPI.DTOs.AccountDTO.Status">
+            <summary>
+            Current status of the account
+            </summary>
+            <example>Active</example>
+        </member>
+        <member name="P:BankAPI.DTOs.AccountDTO.AvailableBalance">
+            <summary>
+            Available balance in the account
+            </summary>
+            <example>15000.00</example>
+        </member>
+        <member name="P:BankAPI.DTOs.AccountDTO.AccountHolder">
+            <summary>
+            Account holder information
+            </summary>
+        </member>
+        <member name="P:BankAPI.DTOs.AccountHolderDTO.FirstName">
+            <summary>
+            Holder's first name
+            </summary>
+            <example>John</example>
+        </member>
+        <member name="P:BankAPI.DTOs.AccountHolderDTO.LastName">
+            <summary>
+            Holder's last name
+            </summary>
+            <example>Doe</example>
+        </member>
+        <member name="P:BankAPI.DTOs.AccountHolderDTO.IdNumber">
+            <summary>
+            National identification number
+            </summary>
+            <example>8505151234088</example>
+        </member>
+        <member name="P:BankAPI.DTOs.AccountHolderDTO.Email">
+            <summary>
+            Contact email address
+            </summary>
+            <example>john.doe@example.com</example>
+        </member>
+        <member name="P:BankAPI.DTOs.AccountHolderDTO.MobileNumber">
+            <summary>
+            Mobile phone number
+            </summary>
+            <example>0825551234</example>
+        </member>
+        <member name="P:BankAPI.DTOs.CreateWithdrawalDTO.AccountNumber">
+            <summary>
+            The account number to withdraw from
+            </summary>
+            <example>1000000001</example>
+        </member>
+        <member name="P:BankAPI.DTOs.CreateWithdrawalDTO.Amount">
+            <summary>
+            The amount to withdraw (must be positive)
+            </summary>
+            <example>100.00</example>
+        </member>
+    </members>
+</doc>

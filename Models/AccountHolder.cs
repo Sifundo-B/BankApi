@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using BankAPI.Models.Auth;
 
 namespace BankAPI.Models
 {
@@ -34,6 +36,11 @@ namespace BankAPI.Models
         [StringLength(100)]
         [EmailAddress]
         public string Email { get; set; } = string.Empty;
+        [Required]
+        public string UserId { get; set; } // Link to Identity User
+
+        [ForeignKey("UserId")]
+        public User User { get; set; } // Navigation property
 
         public ICollection<Account> Accounts { get; set; } = new List<Account>();
     }

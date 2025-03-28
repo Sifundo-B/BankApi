@@ -1,6 +1,7 @@
 using BankAPI.Data;
 using BankAPI.DTOs;
 using BankAPI.Models;
+using BankAPI.Models.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,7 @@ namespace BankAPI.Controllers
 {
     [Route("api/[controller]")] // Base route: /api/withdrawals
     [ApiController]
-    [Authorize] // Requires authentication
+    [Authorize(Roles = Role.Admin + "," + Role.Banker + "," + Role.Customer)]//Added role-based authorization
     public class WithdrawalsController : ControllerBase
     {
          private readonly ApplicationDbContext _context;
@@ -23,7 +24,32 @@ namespace BankAPI.Controllers
             _logger = logger;
         }
 
-      
+       /// <summary>
+        /// Gets withdrawal history for an account (Admin and Banker only)
+        /// </summary>
+        [HttpGet("history/{accountNumber}")]
+        [Authorize(Roles = Role.Admin + "," + Role.Banker)]
+        public async Task<ActionResult<IEnumerable<WithdrawalDTO>>> GetWithdrawalHistory(string accountNumber)
+        {
+            var withdrawals = await _context.Withdrawals
+                .Where(w => w.AccountNumber == accountNumber)
+                .OrderByDescending(w => w.TransactionDate)
+                .Select(w => new WithdrawalDTO
+                {
+                    Id = w.Id,
+                    AccountNumber = w.AccountNumber,
+                    Amount = w.Amount,
+                    TransactionDate = w.TransactionDate
+                })
+                .ToListAsync();
+
+            if (!withdrawals.Any())
+            {
+                return NotFound("No withdrawals found for this account");
+            }
+
+            return withdrawals;
+        }
     /// <summary>
     /// Creates a new withdrawal transaction
     /// </summary>
