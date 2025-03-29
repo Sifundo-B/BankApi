@@ -11,7 +11,7 @@ namespace BankAPI.Controllers
 {
     [Route("api/[controller]")] // Base route: /api/withdrawals
     [ApiController]
-    [Authorize(Roles = Role.Admin + "," + Role.Banker + "," + Role.Customer)]//Added role-based authorization
+    [Authorize]
     public class WithdrawalsController : ControllerBase
     {
          private readonly ApplicationDbContext _context;
@@ -29,7 +29,7 @@ namespace BankAPI.Controllers
         /// Gets withdrawal history for an account (Admin and Banker only)
         /// </summary>
         [HttpGet("history/{accountNumber}")]
-        [Authorize(Roles = Role.Admin + "," + Role.Banker)]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<WithdrawalDTO>>> GetWithdrawalHistory(string accountNumber)
         {
             var withdrawals = await _context.Withdrawals

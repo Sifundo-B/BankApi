@@ -19,12 +19,14 @@ namespace BankAPI.Controllers
             UserManager<User> userManager,
             SignInManager<User> signInManager,
             TokenService tokenService,
-            RoleManager<IdentityRole> roleManager)
+            RoleManager<IdentityRole> roleManager,
+            IConfiguration configuration)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _tokenService = tokenService;
             _roleManager = roleManager;
+            _configuration = configuration;
         }
 
         [HttpPost("register")]

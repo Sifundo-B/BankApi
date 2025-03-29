@@ -1,7 +1,5 @@
 using BankAPI.Data;
 using BankAPI.DTOs;
-using BankAPI.Models;
-using BankAPI.Models.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +8,7 @@ namespace BankAPI.Controllers
 {
     [Route("api/[controller]")] // Base route: /api/accounts
     [ApiController]
-    [Authorize(Roles = Role.Admin + "," + Role.Banker + "," + Role.Customer)]//Added role-based authorization
+    [Authorize]
     public class AccountsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -64,7 +62,7 @@ public async Task<ActionResult<IEnumerable<AccountDTO>>> GetAccountsByHolder(str
         /// Retrieves all accounts (Admin and Banker only)
         /// </summary>
         [HttpGet]
-        [Authorize(Roles = Role.Admin + "," + Role.Banker)]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<AccountDTO>>> GetAllAccounts()
         {
             return await _context.Accounts
