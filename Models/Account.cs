@@ -40,5 +40,8 @@ namespace BankAPI.Models
         
         // Navigation property for withdrawals (one-to-many relationship)
         public ICollection<Withdrawal> Withdrawals { get; set; } = new List<Withdrawal>();
+        [ConcurrencyCheck]
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public byte[] RowVersion { get; set; }
     }
 }

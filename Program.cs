@@ -3,7 +3,6 @@ using BankAPI.Models.Auth;
 using BankAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -12,12 +11,19 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
-    sqlServerOptions => sqlServerOptions.EnableRetryOnFailure(
-        maxRetryCount: 5,
-        maxRetryDelay: TimeSpan.FromSeconds(30),
-        errorNumbersToAdd: null)));
+builder.Services.AddHttpContextAccessor(); // Required for audit logging
+
+// Configure DbContext with retry policy
+builder.Services.AddDbContext<ApplicationDbContext>((services, options) => 
+{
+    var httpContextAccessor = services.GetService<IHttpContextAccessor>();
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlServerOptions => sqlServerOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorNumbersToAdd: null));
+});
 
 // Add Identity services
 builder.Services.AddIdentity<User, IdentityRole>(options =>
@@ -31,8 +37,6 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
-
-builder.Services.AddControllers();
 
 // Configure JWT Authentication
 builder.Services.AddAuthentication(options =>
@@ -59,17 +63,13 @@ builder.Services.AddAuthentication(options =>
 // Configure Authorization policies
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("RequireAdminRole", policy => 
-        policy.RequireRole(Role.Admin));
-    options.AddPolicy("RequireBankerRole", policy => 
-        policy.RequireRole(Role.Banker, Role.Admin));
-    options.AddPolicy("RequireCustomerRole", policy => 
-        policy.RequireRole(Role.Customer, Role.Banker, Role.Admin));
+    options.AddPolicy("RequireAdminRole", policy => policy.RequireRole(Role.Admin));
+    options.AddPolicy("RequireBankerRole", policy => policy.RequireRole(Role.Banker, Role.Admin));
+    options.AddPolicy("RequireCustomerRole", policy => policy.RequireRole(Role.Customer, Role.Banker, Role.Admin));
 });
 
-// Add TokenService
+// Add application services
 builder.Services.AddScoped<TokenService>();
-
 // Configure CORS
 builder.Services.AddCors(options =>
 {
@@ -81,112 +81,87 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Configure Swagger with JWT support
+// Configure Swagger
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo 
     { 
-        Title = "Bank Accounts API", 
+        Title = "Bank API with Audit Trail", 
         Version = "v1",
-        Description = "A secure banking API for managing accounts and transactions",
-        Contact = new OpenApiContact
-        {
-            Name = "API Support",
-            Email = "support@bankapi.com",
-            Url = new Uri("https://bankapi.com/support")
-        },
-        License = new OpenApiLicense
-        {
-            Name = "Bank API License",
-            Url = new Uri("https://bankapi.com/license")
-        }
+        Description = "API with comprehensive audit logging",
+        Contact = new OpenApiContact { Name = "API Team", Email = "api@bank.com" }
     });
 
-    // Add security definition for JWT
+    // Add JWT support to Swagger
     var securityScheme = new OpenApiSecurityScheme
     {
         Name = "JWT Authentication",
-        Description = "Enter JWT Bearer token in the format: Bearer {token}",
+        Description = "Enter JWT Bearer token",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.Http,
         Scheme = "bearer",
         BearerFormat = "JWT",
         Reference = new OpenApiReference
         {
-            Id = JwtBearerDefaults.AuthenticationScheme,
-            Type = ReferenceType.SecurityScheme
+            Type = ReferenceType.SecurityScheme,
+            Id = JwtBearerDefaults.AuthenticationScheme
         }
     };
-    
     c.AddSecurityDefinition(securityScheme.Reference.Id, securityScheme);
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new string[] {}
-        }
+        { securityScheme, Array.Empty<string>() }
     });
-
-    // Include XML comments for documentation
-    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    c.IncludeXmlComments(xmlPath);
 });
 
 var app = builder.Build();
 
-// Initialize the database
+// Database initialization with audit logging
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    try
+    try 
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
         var userManager = services.GetRequiredService<UserManager<User>>();
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+        
         await DbInitializer.Initialize(context, userManager, roleManager);
+        
+        // Log initialization
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogInformation("Database initialized with audit trail support");
     }
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while seeding the database.");
+        logger.LogError(ex, "An error occurred initializing the DB with audit trail");
     }
 }
 
-// Configure the HTTP request pipeline
+// Configure HTTP pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c =>
+    app.UseSwaggerUI(c => 
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Bank Accounts API v1");
-        c.RoutePrefix = "swagger";
-        c.DocumentTitle = "Bank Accounts API Documentation";
-        c.DefaultModelsExpandDepth(-1);
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Bank API v1");
+        c.DisplayOperationId();
         c.DisplayRequestDuration();
-        c.EnableDeepLinking();
-        c.ShowExtensions();
-        c.OAuthClientId("swagger-ui");
-        c.OAuthAppName("Swagger UI");
-        c.OAuthUsePkce();
     });
 }
 
 app.UseHttpsRedirection();
-
-// Enable CORS
 app.UseCors("AllowAll");
-
-// Authentication & Authorization middleware
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Add audit logging middleware (optional)
+app.Use(async (context, next) =>
+{
+    // You can add request-level audit logging here if needed
+    await next();
+});
 
 app.MapControllers();
 

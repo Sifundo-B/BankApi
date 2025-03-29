@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using BankAPI.Data;
 using BankAPI.DTOs;
 using BankAPI.Models;
@@ -77,8 +78,11 @@ namespace BankAPI.Controllers
         {
             try
             {
+                // Get current user ID
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 // Find the account with tracking to update balance
                 var account = await _context.Accounts
+                .Include(a=>a.AccountHolder)
                     .FirstOrDefaultAsync(a => a.AccountNumber == createWithdrawalDTO.AccountNumber);
 
                 if (account == null)
