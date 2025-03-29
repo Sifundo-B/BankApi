@@ -14,7 +14,7 @@ namespace BankAPI.Controllers
         private readonly SignInManager<User> _signInManager;
         private readonly TokenService _tokenService;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly IConfiguration _configuration; 
+        private readonly IConfiguration _configuration;
         public AuthController(
             UserManager<User> userManager,
             SignInManager<User> signInManager,

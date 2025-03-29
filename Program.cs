@@ -19,7 +19,7 @@ builder.WebHost.ConfigureKestrel(options =>
 builder.Services.AddHttpContextAccessor(); // Required for audit logging
 
 // Configure DbContext with retry policy
-builder.Services.AddDbContext<ApplicationDbContext>((services, options) => 
+builder.Services.AddDbContext<ApplicationDbContext>((services, options) =>
 {
     var httpContextAccessor = services.GetService<IHttpContextAccessor>();
     options.UseSqlServer(
@@ -91,9 +91,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo 
-    { 
-        Title = "Bank API with Audit Trail", 
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Bank API with Audit Trail",
         Version = "v1",
         Description = "API with comprehensive audit logging",
         Contact = new OpenApiContact { Name = "API Team", Email = "api@bank.com" }
@@ -126,14 +126,14 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    try 
+    try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
         var userManager = services.GetRequiredService<UserManager<User>>();
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-        
+
         await DbInitializer.Initialize(context, userManager, roleManager);
-        
+
         var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogInformation("Database initialized with audit trail support");
     }
@@ -148,7 +148,7 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c => 
+    app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Bank API v1");
         c.DisplayOperationId();

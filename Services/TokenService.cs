@@ -35,13 +35,13 @@ namespace BankAPI.Services
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
                 _configuration["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var expireMinutes = _configuration["Jwt:ExpireMinutes"]??"30000";
-if (!double.TryParse(expireMinutes, out var expireTime))
-{
-    expireTime = 30; // Default expiration time if configuration value is invalid
-}
+            var expireMinutes = _configuration["Jwt:ExpireMinutes"] ?? "30000";
+            if (!double.TryParse(expireMinutes, out var expireTime))
+            {
+                expireTime = 30; // Default expiration time if configuration value is invalid
+            }
 
-var expires = DateTime.Now.AddMinutes(expireTime);
+            var expires = DateTime.Now.AddMinutes(expireTime);
             var token = new JwtSecurityToken(
                 _configuration["Jwt:Issuer"],
                 _configuration["Jwt:Audience"],

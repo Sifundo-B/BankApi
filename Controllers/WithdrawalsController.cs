@@ -14,18 +14,18 @@ namespace BankAPI.Controllers
     [Authorize]
     public class WithdrawalsController : ControllerBase
     {
-         private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context;
         private readonly ILogger<WithdrawalsController> _logger;
 
         public WithdrawalsController(
-            ApplicationDbContext context, 
+            ApplicationDbContext context,
             ILogger<WithdrawalsController> logger)
         {
             _context = context;
             _logger = logger;
         }
 
-       /// <summary>
+        /// <summary>
         /// Gets withdrawal history for an account (Admin and Banker only)
         /// </summary>
         [HttpGet("history/{accountNumber}")]
@@ -51,30 +51,30 @@ namespace BankAPI.Controllers
 
             return withdrawals;
         }
-    /// <summary>
-    /// Creates a new withdrawal transaction
-    /// </summary>
-    /// <remarks>
-    /// Sample request:
-    ///
-    ///     POST /api/Withdrawals
-    ///     {
-    ///        "accountNumber": "1000000001",
-    ///        "amount": 100.00
-    ///     }
-    ///
-    /// </remarks>
-    /// <param name="createWithdrawalDTO">Withdrawal details</param>
-    /// <returns>The created withdrawal record</returns>
-    /// <response code="201">Returns the newly created withdrawal</response>
-    /// <response code="400">If the request is invalid or business rules are violated</response>
-    /// <response code="404">If the account doesn't exist</response>
-    [HttpPost]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+        /// <summary>
+        /// Creates a new withdrawal transaction
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     POST /api/Withdrawals
+        ///     {
+        ///        "accountNumber": "1000000001",
+        ///        "amount": 100.00
+        ///     }
+        ///
+        /// </remarks>
+        /// <param name="createWithdrawalDTO">Withdrawal details</param>
+        /// <returns>The created withdrawal record</returns>
+        /// <response code="201">Returns the newly created withdrawal</response>
+        /// <response code="400">If the request is invalid or business rules are violated</response>
+        /// <response code="404">If the account doesn't exist</response>
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<WithdrawalDTO>> CreateWithdrawal(
-            CreateWithdrawalDTO createWithdrawalDTO)
+                CreateWithdrawalDTO createWithdrawalDTO)
         {
             try
             {
@@ -82,12 +82,12 @@ namespace BankAPI.Controllers
                 var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 // Find the account with tracking to update balance
                 var account = await _context.Accounts
-                .Include(a=>a.AccountHolder)
+                .Include(a => a.AccountHolder)
                     .FirstOrDefaultAsync(a => a.AccountNumber == createWithdrawalDTO.AccountNumber);
 
                 if (account == null)
                 {
-                    _logger.LogWarning("Account not found: {AccountNumber}", 
+                    _logger.LogWarning("Account not found: {AccountNumber}",
                         createWithdrawalDTO.AccountNumber);
                     return NotFound(new { Message = "Account not found" });
                 }
@@ -96,7 +96,7 @@ namespace BankAPI.Controllers
                 var validationResult = ValidateWithdrawal(account, createWithdrawalDTO.Amount);
                 if (!validationResult.IsValid)
                 {
-                    _logger.LogWarning("Withdrawal validation failed: {ErrorMessage}", 
+                    _logger.LogWarning("Withdrawal validation failed: {ErrorMessage}",
                         validationResult.ErrorMessage);
                     return BadRequest(new { Message = validationResult.ErrorMessage });
                 }
@@ -113,11 +113,11 @@ namespace BankAPI.Controllers
                 account.AvailableBalance -= createWithdrawalDTO.Amount;
 
                 // For fixed deposit accounts, close the account after full withdrawal
-                if (account.Type == AccountType.FixedDeposit && 
+                if (account.Type == AccountType.FixedDeposit &&
                     account.AvailableBalance == 0)
                 {
                     account.Status = AccountStatus.Closed;
-                    _logger.LogInformation("Fixed deposit account {AccountNumber} closed after full withdrawal", 
+                    _logger.LogInformation("Fixed deposit account {AccountNumber} closed after full withdrawal",
                         account.AccountNumber);
                 }
 
@@ -132,17 +132,17 @@ namespace BankAPI.Controllers
                     Amount = withdrawal.Amount
                 };
 
-                _logger.LogInformation("Withdrawal created successfully for account {AccountNumber}", 
+                _logger.LogInformation("Withdrawal created successfully for account {AccountNumber}",
                     withdrawal.AccountNumber);
-                
+
                 return CreatedAtAction(
-                    nameof(CreateWithdrawal), 
-                    new { id = withdrawal.Id }, 
+                    nameof(CreateWithdrawal),
+                    new { id = withdrawal.Id },
                     withdrawalDTO);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error processing withdrawal for account {AccountNumber}", 
+                _logger.LogError(ex, "Error processing withdrawal for account {AccountNumber}",
                     createWithdrawalDTO.AccountNumber);
                 return StatusCode(500, new { Message = "An error occurred while processing your request" });
             }

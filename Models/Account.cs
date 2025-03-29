@@ -24,20 +24,20 @@ namespace BankAPI.Models
     {
         [Key] // Primary key
         public string AccountNumber { get; set; } = string.Empty;
-        
+
         [Required] // Account type is required
         public AccountType Type { get; set; }
         [ForeignKey("AccountHolder")]
         public int AccountHolderId { get; set; }
         public AccountHolder AccountHolder { get; set; } = null!;
-        
+
         [Required] // Status is required
         public AccountStatus Status { get; set; }
-        
+
         [Required] // Balance is required
         [Range(0, double.MaxValue)] // Can't have negative balance
         public decimal AvailableBalance { get; set; }
-        
+
         // Navigation property for withdrawals (one-to-many relationship)
         public ICollection<Withdrawal> Withdrawals { get; set; } = new List<Withdrawal>();
         [ConcurrencyCheck]

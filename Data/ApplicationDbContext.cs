@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Text.Json;
-using Microsoft.AspNetCore.Http; 
+using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,12 +18,12 @@ namespace BankAPI.Data
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, 
-        IHttpContextAccessor httpContextAccessor)
-        : base(options)
-    {
-        _httpContextAccessor = httpContextAccessor;
-    }
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options,
+            IHttpContextAccessor httpContextAccessor)
+            : base(options)
+        {
+            _httpContextAccessor = httpContextAccessor;
+        }
 
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Withdrawal> Withdrawals { get; set; }
@@ -43,7 +43,7 @@ namespace BankAPI.Data
         {
             ChangeTracker.DetectChanges();
             var auditEntries = new List<AuditEntry>();
-            
+
             foreach (var entry in ChangeTracker.Entries())
             {
                 if (entry.Entity is AuditLog || entry.State == EntityState.Detached || entry.State == EntityState.Unchanged)
@@ -52,7 +52,8 @@ namespace BankAPI.Data
                 var auditEntry = new AuditEntry(entry)
                 {
                     TableName = entry.Entity.GetType().Name,
-UserId = _httpContextAccessor?.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "System"                };
+                    UserId = _httpContextAccessor?.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "System"
+                };
                 auditEntries.Add(auditEntry);
 
                 foreach (var property in entry.Properties)
@@ -155,7 +156,7 @@ UserId = _httpContextAccessor?.HttpContext?.User?.FindFirst(ClaimTypes.NameIdent
                 entity.Property(a => a.Type).HasConversion<string>().HasMaxLength(20).IsRequired();
                 entity.Property(a => a.Status).HasConversion<string>().HasMaxLength(20).IsRequired();
                 entity.Property(a => a.AvailableBalance).HasColumnType("decimal(18,2)").IsRequired();
-                
+
                 entity.HasOne(a => a.AccountHolder)
                     .WithMany(ah => ah.Accounts)
                     .HasForeignKey(a => a.AccountHolderId)
@@ -168,7 +169,7 @@ UserId = _httpContextAccessor?.HttpContext?.User?.FindFirst(ClaimTypes.NameIdent
                 entity.Property(w => w.AccountNumber).HasMaxLength(20).IsRequired();
                 entity.Property(w => w.Amount).HasColumnType("decimal(18,2)").IsRequired();
                 entity.Property(w => w.TransactionDate).IsRequired();
-                
+
                 entity.HasOne(w => w.Account)
                     .WithMany(a => a.Withdrawals)
                     .HasForeignKey(w => w.AccountNumber)
@@ -176,5 +177,5 @@ UserId = _httpContextAccessor?.HttpContext?.User?.FindFirst(ClaimTypes.NameIdent
             });
         }
     }
-    
+
 }

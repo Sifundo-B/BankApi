@@ -17,7 +17,7 @@ namespace BankAPI.Data
 
             // Seed roles if they don't exist
             string[] roleNames = { Role.Admin, Role.Banker, Role.Customer, Role.Auditor };
-            
+
             foreach (var roleName in roleNames)
             {
                 if (!await roleManager.RoleExistsAsync(roleName))

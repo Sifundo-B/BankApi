@@ -22,19 +22,19 @@ namespace BankAPI.Models.Helper
 
         public bool HasTemporaryProperties => TemporaryProperties.Any();
 
-       public AuditLog ToAudit()
-{
-    return new AuditLog
-    {
-        TableName = TableName,
-        AuditType = AuditType,
-        ChangedAt = DateTime.UtcNow,
-        ChangedBy = UserId,
-        RecordId = string.Join(",", KeyValues.Select(kv => $"{kv.Key}={kv.Value}")),
-        OldValues = OldValues.Count == 0 ? string.Empty : JsonSerializer.Serialize(OldValues),
-        NewValues = NewValues.Count == 0 ? string.Empty : JsonSerializer.Serialize(NewValues)
-    };
-}
+        public AuditLog ToAudit()
+        {
+            return new AuditLog
+            {
+                TableName = TableName,
+                AuditType = AuditType,
+                ChangedAt = DateTime.UtcNow,
+                ChangedBy = UserId,
+                RecordId = string.Join(",", KeyValues.Select(kv => $"{kv.Key}={kv.Value}")),
+                OldValues = OldValues.Count == 0 ? string.Empty : JsonSerializer.Serialize(OldValues),
+                NewValues = NewValues.Count == 0 ? string.Empty : JsonSerializer.Serialize(NewValues)
+            };
+        }
 
     }
 }
