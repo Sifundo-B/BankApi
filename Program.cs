@@ -9,7 +9,12 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-
+// Explicitly configure Kestrel to listen on HTTP & HTTPS
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(5174); // HTTP
+    options.ListenAnyIP(5001, listenOptions => listenOptions.UseHttps()); // HTTPS
+});
 // Add services to the container
 builder.Services.AddHttpContextAccessor(); // Required for audit logging
 
@@ -82,6 +87,8 @@ builder.Services.AddCors(options =>
 });
 
 // Configure Swagger
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo 
@@ -164,5 +171,5 @@ app.Use(async (context, next) =>
 });
 
 app.MapControllers();
-
+app.UseHttpsRedirection();
 app.Run();
