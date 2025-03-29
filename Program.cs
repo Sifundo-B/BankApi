@@ -58,10 +58,10 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],  // Issuer is pulled from appsettings.json
+        ValidAudience = builder.Configuration["Jwt:Audience"], // Audience is pulled from appsettings.json
         IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])) // JWT key from appsettings.json
     };
 });
 
@@ -99,7 +99,6 @@ builder.Services.AddSwaggerGen(c =>
         Contact = new OpenApiContact { Name = "API Team", Email = "api@bank.com" }
     });
 
-    // Add JWT support to Swagger
     var securityScheme = new OpenApiSecurityScheme
     {
         Name = "JWT Authentication",
@@ -135,7 +134,6 @@ using (var scope = app.Services.CreateScope())
         
         await DbInitializer.Initialize(context, userManager, roleManager);
         
-        // Log initialization
         var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogInformation("Database initialized with audit trail support");
     }
@@ -163,10 +161,8 @@ app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Add audit logging middleware (optional)
 app.Use(async (context, next) =>
 {
-    // You can add request-level audit logging here if needed
     await next();
 });
 
